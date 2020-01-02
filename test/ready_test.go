@@ -40,8 +40,10 @@ func TestReady(t *testing.T) {
 		data := make(map[string]string)
 		for i := 0; i < len(col); i++ {
 			columnValue := columnPointers[i].(*interface{})
-			data[col[i]] = string((*columnValue).([]uint8))
+			data[string(col[i])] = string((*columnValue).([]uint8))
 		}
 		tc = append(tc, data)
 	}
+}
+func TestTemplate(t *testing.T) {
 }

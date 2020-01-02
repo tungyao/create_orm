@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
+	"strings"
 )
 
 var (
@@ -46,7 +47,7 @@ func main() {
 		log.Println(err)
 		os.Exit(0)
 	}
-	row, err := D.Query(`select COLUMN_NAME,DATA_TYPE,IS_NULLABLE,TABLE_NAME,COLUMN_COMMENT from information_schema.COLUMNS where table_schema=? and table_name=?`, "test", "user")
+	row, err := D.Query(`select COLUMN_NAME,DATA_TYPE,IS_NULLABLE,TABLE_NAME,COLUMN_COMMENT from information_schema.COLUMNS where table_schema=? and table_name=?`, d, t)
 	if err != nil {
 		log.Println(err)
 	}
@@ -78,10 +79,10 @@ func main() {
 	fs.Write([]byte("\n// **************" + s + " Start************\n"))
 	fs.Write([]byte("type " + s + " struct {\n"))
 	for _, v := range tc {
-		fs.Write([]byte("\t" + v["COLUMN_NAME"] + "\t" + dataType[v["DATA_TYPE"]] + "\t`" + fmt.Sprint(v["COLUMN_COMMENT"]) + "`\n"))
+		fs.Write([]byte("\t" + string(strings.ToUpper(string(v["COLUMN_NAME"][0]))) + string(v["COLUMN_NAME"][1:]) + "\t" + dataType[v["DATA_TYPE"]] + "\t`" + fmt.Sprint(v["COLUMN_COMMENT"]) + "`\n"))
 	}
 	fs.Write([]byte("}\n\n"))
-	fs.Write([]byte("func Get" + s + "Struct {\n\treturn new(" + s + ")\n}\n"))
+	fs.Write([]byte("func Get" + s + "Struct() *" + s + " {\n\treturn new(" + s + ")\n}\n"))
 	fs.Write([]byte("// --------------" + s + " End--------------\n"))
 	fs.Close()
 }
