@@ -18,17 +18,21 @@ var (
 	p        string // mysql login password
 	f        string // file path
 	c        string // manual or auto control
+	r        bool   // is use easyjson
 	dataType = map[string]string{"int": "int", "varchar": "string", "timestamp": "string", "bigint": "int64", "tinyint": "int8", "char": "byte", "text": "string", "float": "float32", "double": "float64"}
 )
 
 func init() {
 	flag.StringVar(&t, "t", "user", "Name of the mapping table,this column is must first")
-	flag.StringVar(&s, "s", "", "Name of the mapping file")
+	flag.StringVar(&s, "name", "Default", "Name of the mapping file")
+	flag.StringVar(&s, "s", "Default", "Name of the mapping file")
 	flag.StringVar(&d, "d", "", "Name of the database")
 	flag.StringVar(&u, "u", "", "Name of the login name")
 	flag.StringVar(&p, "p", "", "Name of the login password")
-	flag.StringVar(&f, "f", "./a.go", "file path")
-	flag.StringVar(&c, "c", "auto", "manual input or auto input")
+	flag.StringVar(&f, "f", "./default_model.go", "file path")
+	flag.StringVar(&c, "type", "manual", "manual input or auto input")
+	flag.BoolVar(&r, "e", false, "is use easyjson")
+	flag.BoolVar(&r, "easyjson", false, "is use easyjson")
 }
 func main() {
 	flag.Parse()
@@ -45,10 +49,13 @@ manual:
 		os.Exit(0)
 	}
 	fs.Write([]byte("\n// **************" + s + " Start************\n"))
+	if r {
+		fs.Write([]byte("//easyjson\n"))
+	}
 	fs.Write([]byte("type " + s + " struct {\n"))
 	for _, v := range flag.Args() {
 		arg := SplitString([]byte(v), []byte(":"))
-		fs.Write([]byte("\t" + string(arg[0]) + "\t" + string(arg[1]) + "\n"))
+		fs.Write([]byte("\t" + string(arg[0]) + "\t" + string(arg[1]) +"\t`json:\""+strings.ToLower(string(arg[0]))+"\"`\n"))
 	}
 	fs.Write([]byte("}\n\n"))
 	fs.Write([]byte("func Get" + s + "Struct() *" + s + " {\n\treturn new(" + s + ")\n}\n"))
